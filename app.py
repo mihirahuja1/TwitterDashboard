@@ -12,6 +12,7 @@ from flask import Flask
 import os
 import psycopg2
 import datetime
+ 
 import re
 import nltk
 nltk.download('punkt')
@@ -21,62 +22,63 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from textblob import TextBlob
 
-external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.title = 'Real-Time Twitter Monitor'
 
 server = app.server
-
 
 app.layout = html.Div(children=[
     html.H2('Real-time Twitter Sentiment Analysis for Brand Improvement and Topic Tracking ', style={
         'textAlign': 'center'
     }),
-	html.H4('(Last updated: Aug 23, 2019)', style={
+    html.H4('(Last updated: Aug 23, 2019)', style={
         'textAlign': 'right'
-    	}),
-	html.Div(id='live-update-graph'),
+    }),
+    
+
+    html.Div(id='live-update-graph'),
     html.Div(id='live-update-graph-bottom'),
 
     # Author's Words
     html.Div(
         className='row',
         children=[ 
-            dcc.Markdown("__Author's Words__: My dashboard"),
+            dcc.Markdown("__Author's Words__: Dive into the industry and get my hands dirty. That's why I start this self-motivated independent project. If you like it, I would appreciate for starring⭐️ my project on [GitHub](https://github.com/Chulong-Li/Real-time-Sentiment-Tracking-on-Twitter-for-Brand-Improvement-and-Trend-Recognition)!✨"),
         ],style={'width': '35%', 'marginLeft': 70}
     ),
     html.Br(),
-
+    
+    # ABOUT ROW
     html.Div(
-    	className='row',
-    	children=[
-    	html.Div(
-    		className = 'three columns',
-    		children=[
-    		html.P('Data From:'
-    			),
-    		html.A(
-    			'Twitter API',
-    			href='https:developer.twitter.com'
-    			)
-    		]
-
-
-    		),
-    	html.Div(
-    		className='three columns',
-    		children=[
-    		html.P(
-    			'Code at:'
-    			),
-    		html.A(
-    			'Github',
-    			href = 'https://github.com'
-    			)
-    		]
-    		),
-    	html.Div(
+        className='row',
+        children=[
+            html.Div(
+                className='three columns',
+                children=[
+                    html.P(
+                    'Data extracted from:'
+                    ),
+                    html.A(
+                        'Twitter API',
+                        href='https://developer.twitter.com'
+                    )                    
+                ]
+            ),
+            html.Div(
+                className='three columns',
+                children=[
+                    html.P(
+                    'Code avaliable at:'
+                    ),
+                    html.A(
+                        'GitHub',
+                        href='https://github.com/Chulong-Li/Real-time-Sentiment-Tracking-on-Twitter-for-Brand-Improvement-and-Trend-Recognition'
+                    )                    
+                ]
+            ),
+            html.Div(
                 className='three columns',
                 children=[
                     html.P(
@@ -88,33 +90,33 @@ app.layout = html.Div(children=[
                     )                    
                 ]
             ),
-
-    	html.Div(
-    		className='three columns',
-    		children=[
-    		html.P(
-    			'Author:'
-    			),
-    		html.A(
-    			'Mihir Ahuja',
-    			href='https://www.linkedin.com/'
-    			)
-    		]
-    		)
-
-    	], style={'marginLeft':70,'fontSize':16}
-    	),
+            html.Div(
+                className='three columns',
+                children=[
+                    html.P(
+                    'Author:'
+                    ),
+                    html.A(
+                        'Chulong Li',
+                        href='https://www.linkedin.com/in/chulong-li/'
+                    )                    
+                ]
+            )                                                          
+        ], style={'marginLeft': 70, 'fontSize': 16}
+    ),
 
     dcc.Interval(
-    	id='interval-component-slow',
-    	interval=1*10000,
-    	n_intervals=0
-    	)
+        id='interval-component-slow',
+        interval=1*10000, # in milliseconds
+        n_intervals=0
+    )
+    ], style={'padding': '20px'})
 
-	],style={'padding':'20px'})
 
-#Multiple components can update everytime interval gets fired
 
+# Multiple components can update everytime interval gets fired.
+@app.callback(Output('live-update-graph', 'children'),
+              [Input('interval-component-slow', 'n_intervals')])
 def update_graph_live(n):
 
     # Loading data from Heroku PostgreSQL
@@ -436,7 +438,6 @@ def update_graph_bottom_live(n):
             ]
         
     return children
-
 
 
 
