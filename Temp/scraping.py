@@ -112,7 +112,6 @@ if cur.fetchone()[0] == 0:
     cur.execute("CREATE TABLE {} ({});".format(settings.TABLE_NAME, settings.TABLE_ATTRIBUTES))
     conn.commit()
 cur.close()
-
 '''
 
 auth  = tweepy.OAuthHandler(credentials.API_KEY, credentials.API_SECRET_KEY)
