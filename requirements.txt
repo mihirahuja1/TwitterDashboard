@@ -22,5 +22,6 @@ tweepy==3.8.0
 psycopg2-binary==2.8.3
 Flask==1.1.1
 wordcloud==1.8.0
+dataclasses==0.6
 -e git+https://github.com/twintproject/twint.git#egg=twint
 
