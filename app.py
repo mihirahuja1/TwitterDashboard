@@ -22,8 +22,17 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from textblob import TextBlob
 
-import nest_asyncio
-nest_asyncio.apply()
+# import nest_asyncio
+# nest_asyncio.apply()
+
+import twint
+from datetime import datetime
+import re
+from textblob import TextBlob
+import plotly.graph_objects as go
+import plotly.graph_objects as go
+from wordcloud import WordCloud, STOPWORDS
+import itertools  
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
