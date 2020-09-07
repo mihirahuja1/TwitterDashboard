@@ -24,7 +24,7 @@ from textblob import TextBlob
 
 # import nest_asyncio
 # nest_asyncio.apply()
-
+!pip install twint
 import twint
 from datetime import datetime
 import re
