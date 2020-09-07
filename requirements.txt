@@ -21,4 +21,7 @@ textblob==0.15.2
 tweepy==3.8.0
 psycopg2-binary==2.8.3
 Flask==1.1.1
+twint==2.1.21
+re==2.2.1
+wordcloud==1.8.0
 

@@ -28,11 +28,7 @@ from textblob import TextBlob
 import twint
 from datetime import datetime
 import re
-from textblob import TextBlob
-import plotly.graph_objects as go
-import plotly.graph_objects as go
-from wordcloud import WordCloud, STOPWORDS
-import itertools  
+from wordcloud import STOPWORDS
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
