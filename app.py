@@ -44,23 +44,16 @@ app.title = 'Real-Time Twitter Monitor'
 
 server = app.server
 
-app.layout = html.Div(children = [
-		html.H2('Real-time Twitter Sentiment Analysis', style = {
-			'textAlign':'center'
-			}),
-		html.H4('Dev by', style={
-		'textAlign':'right'
-		})
+app.layout = html.Div(children=[
+    html.H2('Real-time Twitter Sentiment Analysis for Brand Improvement and Topic Tracking ', style={
+        'textAlign': 'center'
+    }),
+    html.H4('(Last updated: Aug 23, 2019)', style={
+        'textAlign': 'right'
+    }),
+    
 
-		html.Div(id='live-update-graph'),
-
-		dcc.Interval(
-        id='interval-component-slow',
-        interval=1*10000, # in milliseconds
-        n_intervals=0
-    )
-	],style={'padding':'20px'})
-
+    html.Div(id='live-update-graph') ])
 
 
 
