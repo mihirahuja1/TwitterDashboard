@@ -22,7 +22,8 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from textblob import TextBlob
 
-
+import nest_asyncio
+nest_asyncio.apply()
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
