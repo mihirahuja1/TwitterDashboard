@@ -127,200 +127,154 @@ app.layout = html.Div(children=[
               [Input('interval-component-slow', 'n_intervals')])
 def update_graph_live(n):
 
+	def fetch_tweets(query,count,start_time,stop_time):
+    '''
+    This function fetches tweets based on a query
+    '''
+    config = twint.Config()
+    config.Search = query
+    config.Limit = count
+    config.Lang = "en"
+    config.Since = start_time
+    config.Until = stop_time
+    config.Custom["created_at"] = ["stamp"]#running search
+    #config.Store_csv = True
+    #config.Output = "none"
+    config.Pandas = True
+    twint.run.Search(config)
+    return twint.storage.panda.Tweets_df
+    #return config.Pandas.get()
+
+    dump = fetch_tweets('PYPL',100,"2019-04-29","2020-04-30")
+    df = dump
+    finalized_dataframe = df[['date','tweet','nretweets','nlikes']]
+
+
+
+    def clean_text(txt):
+    #Remove URL
+    	txt = txt.lower()
+    	txt = re.sub(r'^https?:\/\/.*[\r\n]*', '', txt, flags=re.MULTILINE)
+    
+    #Remove special characters
+    	txt = re.sub('[^A-Za-z0-9]+', ' ', txt)
+    
+    	return txt
+
+
+    finalized_dataframe['tweet'] = finalized_dataframe['tweet'].apply(lambda x: clean_text(x))
+
+    finalized_dataframe['hour_mark'] = finalized_dataframe['date'].apply(lambda x: x[11:13])
+
+    def getPolarity(text):
+    
+    return TextBlob(text).sentiment.polarity
+
+    def polarity_label_function(pol):
+    if pol>0.5:
+        return 'Pos'
+    elif pol<-0.5:
+        return 'Neg'
+    else:
+        return 'Neu'
+    
+
+    finalized_dataframe['polarity_label'] = finalized_dataframe['polarity'].apply(lambda x: polarity_label_function(x))
+
+
+    finalized_dataframe.groupby(['polarity_label','hour_mark'])['polarity_label'].count().reset_index(name='count')
+
+    temp = finalized_dataframe.groupby([pd.Grouper(key='hour_mark'), 'polarity_label']).count().unstack(fill_value=0).stack().reset_index()
+
+    temp = temp[['hour_mark','polarity_label','date']]
+
+    pos_df = temp.loc[temp['polarity_label']=='Pos']
+	neg_df = temp.loc[temp['polarity_label']=='Neg']
+	neu_df = temp.loc[temp['polarity_label']=='Neu']
+    neg_df['date'] = neg_df['date'].apply(lambda x: x*-1)
+
+
     # Loading data from Heroku PostgreSQL
-    DATABASE_URL = os.environ['DATABASE_URL']
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-    query = "SELECT id_str, text, created_at, polarity, user_location, user_followers_count FROM {}".format(settings.TABLE_NAME)
-    df = pd.read_sql(query, con=conn)
+    # DATABASE_URL = os.environ['DATABASE_URL']
+    # conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    # query = "SELECT id_str, text, created_at, polarity, user_location, user_followers_count FROM {}".format(settings.TABLE_NAME)
+    # df = pd.read_sql(query, con=conn)
 
 
     # Convert UTC into PDT
-    df['created_at'] = pd.to_datetime(df['created_at']).apply(lambda x: x - datetime.timedelta(hours=7))
+    # df['created_at'] = pd.to_datetime(df['created_at']).apply(lambda x: x - datetime.timedelta(hours=7))
 
-    # Clean and transform data to enable time series
-    result = df.groupby([pd.Grouper(key='created_at', freq='10s'), 'polarity']).count().unstack(fill_value=0).stack().reset_index()
-    result = result.rename(columns={"id_str": "Num of '{}' mentions".format(settings.TRACK_WORDS[0]), "created_at":"Time"})  
-    time_series = result["Time"][result['polarity']==0].reset_index(drop=True)
+    # # Clean and transform data to enable time series
+    # result = df.groupby([pd.Grouper(key='created_at', freq='10s'), 'polarity']).count().unstack(fill_value=0).stack().reset_index()
+    # result = result.rename(columns={"id_str": "Num of '{}' mentions".format(settings.TRACK_WORDS[0]), "created_at":"Time"})  
+    # time_series = result["Time"][result['polarity']==0].reset_index(drop=True)
 
-    min10 = datetime.datetime.now() - datetime.timedelta(hours=7, minutes=10)
-    min20 = datetime.datetime.now() - datetime.timedelta(hours=7, minutes=20)
+    # min10 = datetime.datetime.now() - datetime.timedelta(hours=7, minutes=10)
+    # min20 = datetime.datetime.now() - datetime.timedelta(hours=7, minutes=20)
 
-    neu_num = result[result['Time']>min10]["Num of '{}' mentions".format(settings.TRACK_WORDS[0])][result['polarity']==0].sum()
-    neg_num = result[result['Time']>min10]["Num of '{}' mentions".format(settings.TRACK_WORDS[0])][result['polarity']==-1].sum()
-    pos_num = result[result['Time']>min10]["Num of '{}' mentions".format(settings.TRACK_WORDS[0])][result['polarity']==1].sum()
+    # neu_num = result[result['Time']>min10]["Num of '{}' mentions".format(settings.TRACK_WORDS[0])][result['polarity']==0].sum()
+    # neg_num = result[result['Time']>min10]["Num of '{}' mentions".format(settings.TRACK_WORDS[0])][result['polarity']==-1].sum()
+    # pos_num = result[result['Time']>min10]["Num of '{}' mentions".format(settings.TRACK_WORDS[0])][result['polarity']==1].sum()
     
-    # Loading back-up summary data
-    query = "SELECT daily_user_num, daily_tweets_num, impressions FROM Back_Up;"
-    back_up = pd.read_sql(query, con=conn)  
-    daily_tweets_num = back_up['daily_tweets_num'].iloc[0] + result[-6:-3]["Num of '{}' mentions".format(settings.TRACK_WORDS[0])].sum()
-    daily_impressions = back_up['impressions'].iloc[0] + df[df['created_at'] > (datetime.datetime.now() - datetime.timedelta(hours=7, seconds=10))]['user_followers_count'].sum()
-    cur = conn.cursor()
+    # # Loading back-up summary data
+    # query = "SELECT daily_user_num, daily_tweets_num, impressions FROM Back_Up;"
+    # back_up = pd.read_sql(query, con=conn)  
+    # daily_tweets_num = back_up['daily_tweets_num'].iloc[0] + result[-6:-3]["Num of '{}' mentions".format(settings.TRACK_WORDS[0])].sum()
+    # daily_impressions = back_up['impressions'].iloc[0] + df[df['created_at'] > (datetime.datetime.now() - datetime.timedelta(hours=7, seconds=10))]['user_followers_count'].sum()
+    # cur = conn.cursor()
 
-    PDT_now = datetime.datetime.now() - datetime.timedelta(hours=7)
-    if PDT_now.strftime("%H%M")=='0000':
-        cur.execute("UPDATE Back_Up SET daily_tweets_num = 0, impressions = 0;")
-    else:
-        cur.execute("UPDATE Back_Up SET daily_tweets_num = {}, impressions = {};".format(daily_tweets_num, daily_impressions))
-    conn.commit()
-    cur.close()
-    conn.close()
+    # PDT_now = datetime.datetime.now() - datetime.timedelta(hours=7)
+    # if PDT_now.strftime("%H%M")=='0000':
+    #     cur.execute("UPDATE Back_Up SET daily_tweets_num = 0, impressions = 0;")
+    # else:
+    #     cur.execute("UPDATE Back_Up SET daily_tweets_num = {}, impressions = {};".format(daily_tweets_num, daily_impressions))
+    # conn.commit()
+    # cur.close()
+    # conn.close()
 
     # Percentage Number of Tweets changed in Last 10 mins
 
-    count_now = df[df['created_at'] > min10]['id_str'].count()
-    count_before = df[ (min20 < df['created_at']) & (df['created_at'] < min10)]['id_str'].count()
-    percent = (count_now-count_before)/count_before*100
     # Create the graph 
     children = [
-                html.Div([
-                    html.Div([
-                        dcc.Graph(
-                            id='crossfilter-indicator-scatter',
-                            figure={
-                                'data': [
-                                    go.Scatter(
-                                        x=time_series,
-                                        y=result["Num of '{}' mentions".format(settings.TRACK_WORDS[0])][result['polarity']==0].reset_index(drop=True),
-                                        name="Neutrals",
-                                        opacity=0.8,
-                                        mode='lines',
-                                        line=dict(width=0.5, color='rgb(131, 90, 241)'),
-                                        stackgroup='one' 
-                                    ),
-                                    go.Scatter(
-                                        x=time_series,
-                                        y=result["Num of '{}' mentions".format(settings.TRACK_WORDS[0])][result['polarity']==-1].reset_index(drop=True).apply(lambda x: -x),
-                                        name="Negatives",
-                                        opacity=0.8,
-                                        mode='lines',
-                                        line=dict(width=0.5, color='rgb(255, 50, 50)'),
-                                        stackgroup='two' 
-                                    ),
-                                    go.Scatter(
-                                        x=time_series,
-                                        y=result["Num of '{}' mentions".format(settings.TRACK_WORDS[0])][result['polarity']==1].reset_index(drop=True),
-                                        name="Positives",
-                                        opacity=0.8,
-                                        mode='lines',
-                                        line=dict(width=0.5, color='rgb(184, 247, 212)'),
-                                        stackgroup='three' 
-                                    )
-                                ]
-                            }
-                        )
-                    ], style={'width': '73%', 'display': 'inline-block', 'padding': '0 0 0 20'}),
-                    
-                    html.Div([
-                        dcc.Graph(
-                            id='pie-chart',
-                            figure={
-                                'data': [
-                                    go.Pie(
-                                        labels=['Positives', 'Negatives', 'Neutrals'], 
-                                        values=[pos_num, neg_num, neu_num],
-                                        name="View Metrics",
-                                        marker_colors=['rgba(184, 247, 212, 0.6)','rgba(255, 50, 50, 0.6)','rgba(131, 90, 241, 0.6)'],
-                                        textinfo='value',
-                                        hole=.65)
-                                ],
-                                'layout':{
-                                    'showlegend':False,
-                                    'title':'Tweets In Last 10 Mins',
-                                    'annotations':[
-                                        dict(
-                                            text='{0:.1f}K'.format((pos_num+neg_num+neu_num)/1000),
-                                            font=dict(
-                                                size=40
-                                            ),
-                                            showarrow=False
-                                        )
-                                    ]
-                                }
+               
 
-                            }
-                        )
-                    ], style={'width': '27%', 'display': 'inline-block'})
-                ]),
-                
-                html.Div(
-                    className='row',
-                    children=[
-                        html.Div(
-                            children=[
-                                html.P('Tweets/10 Mins Changed By',
-                                    style={
-                                        'fontSize': 17
-                                    }
-                                ),
-                                html.P('{0:.2f}%'.format(percent) if percent <= 0 else '+{0:.2f}%'.format(percent),
-                                    style={
-                                        'fontSize': 40
-                                    }
-                                )
-                            ], 
-                            style={
-                                'width': '20%', 
-                                'display': 'inline-block'
-                            }
+    		html.Div([
+    				html.Div([
 
-                        ),
-                        html.Div(
-                            children=[
-                                html.P('Potential Impressions Today',
-                                    style={
-                                        'fontSize': 17
-                                    }
-                                ),
-                                html.P('{0:.1f}K'.format(daily_impressions/1000) \
-                                        if daily_impressions < 1000000 else \
-                                            ('{0:.1f}M'.format(daily_impressions/1000000) if daily_impressions < 1000000000 \
-                                            else '{0:.1f}B'.format(daily_impressions/1000000000)),
-                                    style={
-                                        'fontSize': 40
-                                    }
-                                )
-                            ], 
-                            style={
-                                'width': '20%', 
-                                'display': 'inline-block'
-                            }
-                        ),
-                        html.Div(
-                            children=[
-                                html.P('Tweets Posted Today',
-                                    style={
-                                        'fontSize': 17
-                                    }
-                                ),
-                                html.P('{0:.1f}K'.format(daily_tweets_num/1000),
-                                    style={
-                                        'fontSize': 40
-                                    }
-                                )
-                            ], 
-                            style={
-                                'width': '20%', 
-                                'display': 'inline-block'
-                            }
-                        ),
+    					dcc.graph(
+    						id='crossfilter-indicator-scatter',
+    						figure={
+    						'data':[
+    							go.scatter(
+    								x=neu_df['hour_mark'],
+    								y=neu_df['date'],
+    								fill='tozeroy',
+    								name='Neutral',
+    								line=dict(width=0.5, color='rgb(131, 90, 241)')
+    								),
+    							go.scatter(
+    								x=neg_df['hour_mark'],
+    								y=neg_df['date'],
+    								fill='tozeroy',
+    								name='Negative',
+    								line=dict(width=0.5, color='rgb(255, 50, 50)')
+    								),
+    							go.scatter(
+    								x=pos_df['hour_mark'],
+    								y=pos_df['date'],
+    								fill='tozeroy',
+    								name='Positive',
+    								line=dict(width=0.5, color='rgb(184, 247, 212)')
+    								)
 
-                        html.Div(
-                            children=[
-                                html.P("Currently tracking \"Facebook\" brand (NASDAQ: FB) on Twitter in Pacific Daylight Time (PDT).",
-                                    style={
-                                        'fontSize': 25
-                                    }
-                                ),
-                            ], 
-                            style={
-                                'width': '40%', 
-                                'display': 'inline-block'
-                            }
-                        ),
+    						]
+    						}
+    						)	
 
-                    ],
-                    style={'marginLeft': 70}
-                )
+    					])
+
+    			]style={'width': '73%', 'display': 'inline-block', 'padding': '0 0 0 20'})
+
             ]
     return children
 
