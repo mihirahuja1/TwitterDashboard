@@ -23,20 +23,20 @@ from nltk.corpus import stopwords
 from textblob import TextBlob
 
 ####MY imports
-import nest_asyncio
-nest_asyncio.apply()
-import twint
-from datetime import datetime
-import pandas as pd
-import numpy
-import re
-from textblob import TextBlob
-import plotly.graph_objects as go
-import plotly.graph_objects as go
-from wordcloud import WordCloud, STOPWORDS
-import itertools    
+# import nest_asyncio
+# nest_asyncio.apply()
+# import twint
+# from datetime import datetime
+# import pandas as pd
+# import numpy
+# import re
+# from textblob import TextBlob
+# import plotly.graph_objects as go
+# import plotly.graph_objects as go
+# from wordcloud import WordCloud, STOPWORDS
+# import itertools    
 
-stopwords = set(STOPWORDS)
+# stopwords = set(STOPWORDS)
 #####
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
