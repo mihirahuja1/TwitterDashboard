@@ -127,21 +127,18 @@ app.layout = html.Div(children=[
               [Input('interval-component-slow', 'n_intervals')])
 def update_graph_live(n):
 
-	def fetch_tweets(query,count,start_time,stop_time):
-	    config = twint.Config()
-	    config.Search = query
-	    config.Limit = count
-	    config.Lang = "en"
-	    config.Since = start_time
-	    config.Until = stop_time
-	    config.Custom["created_at"] = ["stamp"]#running search
-	    #config.Store_csv = True
-	    #config.Output = "none"
-	    config.Pandas = True
-	    twint.run.Search(config)
-    	return twint.storage.panda.Tweets_df
+	config = twint.Config()
+	config.Search = 'PYPL'
+	config.Limit = 100
+	config.Lang = "en"
+	config.Since = "2019-04-29"
+	config.Until = "2020-04-30"
+	config.Custom["created_at"] = ["stamp"]#running search
+	config.Pandas = True
+	twint.run.Search(config)
+	dump = twint.storage.panda.Tweets_df
 
-    dump = fetch_tweets('PYPL',100,"2019-04-29","2020-04-30")
+    #dump = fetch_tweets('PYPL',100,"2019-04-29","2020-04-30")
     df = dump
     finalized_dataframe = df[['date','tweet','nretweets','nlikes']]
 
