@@ -128,9 +128,6 @@ app.layout = html.Div(children=[
 def update_graph_live(n):
 
 	def fetch_tweets(query,count,start_time,stop_time):
-    '''
-    This function fetches tweets based on a query
-    '''
 	    config = twint.Config()
 	    config.Search = query
 	    config.Limit = count
@@ -143,7 +140,6 @@ def update_graph_live(n):
 	    config.Pandas = True
 	    twint.run.Search(config)
     	return twint.storage.panda.Tweets_df
-    #return config.Pandas.get()
 
     dump = fetch_tweets('PYPL',100,"2019-04-29","2020-04-30")
     df = dump
