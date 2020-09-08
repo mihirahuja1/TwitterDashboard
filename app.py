@@ -38,12 +38,12 @@ app.title = 'Real-Time Twitter Monitor'
 server = app.server
 
 app.layout = html.Div(children=[
-    # html.H2('Real-time Twitter Sentiment Analysis for Brand Improvement and Topic Tracking ', style={
-    #     'textAlign': 'center'
-    # }),
-    # html.H4('(Last updated: Aug 23, 2019)', style={
-    #     'textAlign': 'right'
-    # }),
+    html.H2('Real-Time Tweet Tracking', style={
+        'textAlign': 'center'
+    }),
+    html.H4('(Graphs loading..)', style={
+        'textAlign': 'right'
+    }),
     
 
     html.Div(id='live-update-graph'),
@@ -53,7 +53,7 @@ app.layout = html.Div(children=[
     html.Div(
         className='row',
         children=[ 
-            dcc.Markdown("__Author's Words__: Dive into the industry and get my hands dirty. That's why I start this self-motivated independent project. If you like it, I would appreciate for starring⭐️ my project on [GitHub](https://github.com/Chulong-Li/Real-time-Sentiment-Tracking-on-Twitter-for-Brand-Improvement-and-Trend-Recognition)!✨"),
+            dcc.Markdown("__Author's Words__: Using my CS background and love for Data Visualization, I developed this real-time dashboard[GitHub](https://github.com/Chulong-Li/Real-time-Sentiment-Tracking-on-Twitter-for-Brand-Improvement-and-Trend-Recognition)!✨"),
         ],style={'width': '35%', 'marginLeft': 70}
     ),
     html.Br(),
@@ -222,6 +222,18 @@ def update_graph_live(n):
     # Percentage Number of Tweets changed in Last 10 mins
 
     # Create the graph 
+
+
+
+    #PIE CHARTS
+	polarity_agg = finalized_dataframe.groupby('polarity_label')['polarity_label'].count().reset_index(name='count')
+	neg_count = polarity_agg.loc[polarity_agg['polarity_label']=='Neg']['count']
+	pos_count = polarity_agg.loc[polarity_agg['polarity_label']=='Pos']['count']
+	neu_count = polarity_agg.loc[polarity_agg['polarity_label']=='Neu']['count']
+
+	labels = ['Positive','Negative','Neutral']
+	values = [pos_count.values[0], neg_count.values[0], neu_count.values[0]]
+
 	children = [
                
     		html.Div([
@@ -257,7 +269,33 @@ def update_graph_live(n):
     						}
     						)	
 
-    					], style={'width': '73%', 'display': 'inline-block', 'padding': '0 0 0 20'})
+    					], style={'width': '73%', 'display': 'inline-block', 'padding': '0 0 0 20'}),
+
+    				html.Div([
+    					dcc.Graph(
+    						id='pie-chart',
+    						figure={
+    						'data':[
+    						go.Pie(labels=labels,values=values,hole=.54,marker_colors=['rgba(184, 247, 212, 0.6)','rgba(255, 50, 50, 0.6)','rgba(131, 90, 241, 0.6)'])
+    						],
+    						'layout':{
+    						'showlegend':False,
+    						'title':'Tweets Pie Chart',
+    						'annotations':[
+    						dict(
+    							text='{0:.1f}K'.format((pos_count.values[0]+neg_count.values[0]+neu_count.values[0])/1000),
+    							font=dict(
+    								size=40
+    								),
+    								showarrow=False
+    							)
+    						]
+    						}
+
+    						}
+    						)
+
+    					], style={'width':'27%','display':'inline-block'})
 
 					])
             ]
