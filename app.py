@@ -38,12 +38,12 @@ app.title = 'Real-Time Twitter Monitor'
 server = app.server
 
 app.layout = html.Div(children=[
-    html.H2('Real-time Twitter Sentiment Analysis for Brand Improvement and Topic Tracking ', style={
-        'textAlign': 'center'
-    }),
-    html.H4('(Last updated: Aug 23, 2019)', style={
-        'textAlign': 'right'
-    }),
+    # html.H2('Real-time Twitter Sentiment Analysis for Brand Improvement and Topic Tracking ', style={
+    #     'textAlign': 'center'
+    # }),
+    # html.H4('(Last updated: Aug 23, 2019)', style={
+    #     'textAlign': 'right'
+    # }),
     
 
     html.Div(id='live-update-graph'),
@@ -58,64 +58,64 @@ app.layout = html.Div(children=[
     ),
     html.Br(),
     
-    # ABOUT ROW
-    html.Div(
-        className='row',
-        children=[
-            html.Div(
-                className='three columns',
-                children=[
-                    html.P(
-                    'Data extracted from:'
-                    ),
-                    html.A(
-                        'Twitter API',
-                        href='https://developer.twitter.com'
-                    )                    
-                ]
-            ),
-            html.Div(
-                className='three columns',
-                children=[
-                    html.P(
-                    'Code avaliable at:'
-                    ),
-                    html.A(
-                        'GitHub',
-                        href='https://github.com/Chulong-Li/Real-time-Sentiment-Tracking-on-Twitter-for-Brand-Improvement-and-Trend-Recognition'
-                    )                    
-                ]
-            ),
-            html.Div(
-                className='three columns',
-                children=[
-                    html.P(
-                    'Made with:'
-                    ),
-                    html.A(
-                        'Dash / Plot.ly',
-                        href='https://plot.ly/dash/'
-                    )                    
-                ]
-            ),
-            html.Div(
-                className='three columns',
-                children=[
-                    html.P(
-                    'Author:'
-                    ),
-                    html.A(
-                        'Chulong Li',
-                        href='https://www.linkedin.com/in/chulong-li/'
-                    )                    
-                ]
-            )                                                          
-        ], style={'marginLeft': 70, 'fontSize': 16}
-    ),
+    # # ABOUT ROW
+    # html.Div(
+    #     className='row',
+    #     children=[
+    #         html.Div(
+    #             className='three columns',
+    #             children=[
+    #                 html.P(
+    #                 'Data extracted from:'
+    #                 ),
+    #                 html.A(
+    #                     'Twitter API',
+    #                     href='https://developer.twitter.com'
+    #                 )                    
+    #             ]
+    #         ),
+    #         html.Div(
+    #             className='three columns',
+    #             children=[
+    #                 html.P(
+    #                 'Code avaliable at:'
+    #                 ),
+    #                 html.A(
+    #                     'GitHub',
+    #                     href='https://github.com/Chulong-Li/Real-time-Sentiment-Tracking-on-Twitter-for-Brand-Improvement-and-Trend-Recognition'
+    #                 )                    
+    #             ]
+    #         ),
+    #         html.Div(
+    #             className='three columns',
+    #             children=[
+    #                 html.P(
+    #                 'Made with:'
+    #                 ),
+    #                 html.A(
+    #                     'Dash / Plot.ly',
+    #                     href='https://plot.ly/dash/'
+    #                 )                    
+    #             ]
+    #         ),
+    #         html.Div(
+    #             className='three columns',
+    #             children=[
+    #                 html.P(
+    #                 'Author:'
+    #                 ),
+    #                 html.A(
+    #                     'Chulong Li',
+    #                     href='https://www.linkedin.com/in/chulong-li/'
+    #                 )                    
+    #             ]
+    #         )                                                          
+    #     ], style={'marginLeft': 70, 'fontSize': 16}
+    # ),
 
     dcc.Interval(
         id='interval-component-slow',
-        interval=1*10000, # in milliseconds
+        interval=1*1000000, # in milliseconds
         n_intervals=0
     )
     ], style={'padding': '20px'})
@@ -126,8 +126,6 @@ app.layout = html.Div(children=[
 @app.callback(Output('live-update-graph', 'children'),
               [Input('interval-component-slow', 'n_intervals')])
 def update_graph_live(n):
- sdv
- 
 	config = twint.Config()
 	config.Search = 'PYPL'
 	config.Limit = 100
@@ -155,6 +153,9 @@ def update_graph_live(n):
 
 	def getPolarity(text):
 		return TextBlob(text).sentiment.polarity
+
+
+	finalized_dataframe['polarity'] = finalized_dataframe['tweet'].apply(lambda x: getPolarity(x))	
 
 	def polarity_label_function(pol):
 		if pol>0.5:
@@ -226,25 +227,25 @@ def update_graph_live(n):
     		html.Div([
     				html.Div([
 
-    					dcc.graph(
+    					dcc.Graph(
     						id='crossfilter-indicator-scatter',
     						figure={
     						'data':[
-    							go.scatter(
+    							go.Scatter(
     								x=neu_df['hour_mark'],
     								y=neu_df['date'],
     								fill='tozeroy',
     								name='Neutral',
     								line=dict(width=0.5, color='rgb(131, 90, 241)')
     								),
-    							go.scatter(
+    							go.Scatter(
     								x=neg_df['hour_mark'],
     								y=neg_df['date'],
     								fill='tozeroy',
     								name='Negative',
     								line=dict(width=0.5, color='rgb(255, 50, 50)')
     								),
-    							go.scatter(
+    							go.Scatter(
     								x=pos_df['hour_mark'],
     								y=pos_df['date'],
     								fill='tozeroy',
@@ -256,7 +257,7 @@ def update_graph_live(n):
     						}
     						)	
 
-    					])
+    					], style={'width': '73%', 'display': 'inline-block', 'padding': '0 0 0 20'})
 
 					])
             ]
