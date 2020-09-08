@@ -131,18 +131,18 @@ def update_graph_live(n):
     '''
     This function fetches tweets based on a query
     '''
-    config = twint.Config()
-    config.Search = query
-    config.Limit = count
-    config.Lang = "en"
-    config.Since = start_time
-    config.Until = stop_time
-    config.Custom["created_at"] = ["stamp"]#running search
-    #config.Store_csv = True
-    #config.Output = "none"
-    config.Pandas = True
-    twint.run.Search(config)
-    return twint.storage.panda.Tweets_df
+	    config = twint.Config()
+	    config.Search = query
+	    config.Limit = count
+	    config.Lang = "en"
+	    config.Since = start_time
+	    config.Until = stop_time
+	    config.Custom["created_at"] = ["stamp"]#running search
+	    #config.Store_csv = True
+	    #config.Output = "none"
+	    config.Pandas = True
+	    twint.run.Search(config)
+    	return twint.storage.panda.Tweets_df
     #return config.Pandas.get()
 
     dump = fetch_tweets('PYPL',100,"2019-04-29","2020-04-30")
@@ -168,15 +168,15 @@ def update_graph_live(n):
 
     def getPolarity(text):
     
-    return TextBlob(text).sentiment.polarity
+    	return TextBlob(text).sentiment.polarity
 
     def polarity_label_function(pol):
-    if pol>0.5:
-        return 'Pos'
-    elif pol<-0.5:
-        return 'Neg'
-    else:
-        return 'Neu'
+	    if pol>0.5:
+	        return 'Pos'
+	    elif pol<-0.5:
+	        return 'Neg'
+	    else:
+	        return 'Neu'
     
 
     finalized_dataframe['polarity_label'] = finalized_dataframe['polarity'].apply(lambda x: polarity_label_function(x))
