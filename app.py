@@ -137,54 +137,46 @@ def update_graph_live(n):
 	config.Pandas = True
 	twint.run.Search(config)
 	dump = twint.storage.panda.Tweets_df
+	df = dump
+	finalized_dataframe = df[['date','tweet','nretweets','nlikes']]
 
-    #dump = fetch_tweets('PYPL',100,"2019-04-29","2020-04-30")
-    df = dump
-    finalized_dataframe = df[['date','tweet','nretweets','nlikes']]
-
-
-
-    def clean_text(txt):
-    #Remove URL
-    	txt = txt.lower()
-    	txt = re.sub(r'^https?:\/\/.*[\r\n]*', '', txt, flags=re.MULTILINE)
-    
-    #Remove special characters
-    	txt = re.sub('[^A-Za-z0-9]+', ' ', txt)
-    
-    	return txt
+	def clean_text(txt):
+	#Remove URL
+		txt = txt.lower()
+		txt = re.sub(r'^https?:\/\/.*[\r\n]*', '', txt, flags=re.MULTILINE)
+		#Remove special characters
+		txt = re.sub('[^A-Za-z0-9]+', ' ', txt)
+		return txt
 
 
-    finalized_dataframe['tweet'] = finalized_dataframe['tweet'].apply(lambda x: clean_text(x))
+	finalized_dataframe['tweet'] = finalized_dataframe['tweet'].apply(lambda x: clean_text(x))
+	finalized_dataframe['hour_mark'] = finalized_dataframe['date'].apply(lambda x: x[11:13])
 
-    finalized_dataframe['hour_mark'] = finalized_dataframe['date'].apply(lambda x: x[11:13])
+	def getPolarity(text):
+		return TextBlob(text).sentiment.polarity
 
-    def getPolarity(text):
-    
-    	return TextBlob(text).sentiment.polarity
-
-    def polarity_label_function(pol):
-	    if pol>0.5:
-	        return 'Pos'
-	    elif pol<-0.5:
-	        return 'Neg'
-	    else:
-	        return 'Neu'
+	def polarity_label_function(pol):
+		if pol>0.5:
+			return 'Pos'
+		elif pol<-0.5:
+			return 'Neg'
+		else:
+			return 'Neu'
     
 
-    finalized_dataframe['polarity_label'] = finalized_dataframe['polarity'].apply(lambda x: polarity_label_function(x))
+	finalized_dataframe['polarity_label'] = finalized_dataframe['polarity'].apply(lambda x: polarity_label_function(x))
 
 
-    finalized_dataframe.groupby(['polarity_label','hour_mark'])['polarity_label'].count().reset_index(name='count')
+	finalized_dataframe.groupby(['polarity_label','hour_mark'])['polarity_label'].count().reset_index(name='count')
 
-    temp = finalized_dataframe.groupby([pd.Grouper(key='hour_mark'), 'polarity_label']).count().unstack(fill_value=0).stack().reset_index()
+	temp = finalized_dataframe.groupby([pd.Grouper(key='hour_mark'), 'polarity_label']).count().unstack(fill_value=0).stack().reset_index()
 
-    temp = temp[['hour_mark','polarity_label','date']]
+	temp = temp[['hour_mark','polarity_label','date']]
 
-    pos_df = temp.loc[temp['polarity_label']=='Pos']
+	pos_df = temp.loc[temp['polarity_label']=='Pos']
 	neg_df = temp.loc[temp['polarity_label']=='Neg']
 	neu_df = temp.loc[temp['polarity_label']=='Neu']
-    neg_df['date'] = neg_df['date'].apply(lambda x: x*-1)
+	neg_df['date'] = neg_df['date'].apply(lambda x: x*-1)
 
 
     # Loading data from Heroku PostgreSQL
@@ -228,9 +220,8 @@ def update_graph_live(n):
     # Percentage Number of Tweets changed in Last 10 mins
 
     # Create the graph 
-    children = [
+	children = [
                
-
     		html.Div([
     				html.Div([
 
@@ -266,10 +257,9 @@ def update_graph_live(n):
 
     					])
 
-    			]style={'width': '73%', 'display': 'inline-block', 'padding': '0 0 0 20'})
-
+					])
             ]
-    return children
+	return children
 
 
 
