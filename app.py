@@ -126,7 +126,8 @@ app.layout = html.Div(children=[
 @app.callback(Output('live-update-graph', 'children'),
               [Input('interval-component-slow', 'n_intervals')])
 def update_graph_live(n):
-
+ sdv
+ 
 	config = twint.Config()
 	config.Search = 'PYPL'
 	config.Limit = 100
