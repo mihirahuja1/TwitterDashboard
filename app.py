@@ -38,10 +38,10 @@ app.title = 'Real-Time Twitter Monitor'
 server = app.server
 
 app.layout = html.Div(children=[
-    html.H2('Real-Time Tweet Tracking', style={
+    html.H2('Real-Time Tweet Tracking for $PYPL', style={
         'textAlign': 'center'
     }),
-    html.H4('(Graphs loading..)', style={
+    html.H4('(Graphs loading & refreshing..)', style={
         'textAlign': 'right'
     }),
     
@@ -53,69 +53,69 @@ app.layout = html.Div(children=[
     html.Div(
         className='row',
         children=[ 
-            dcc.Markdown("__Author's Words__: Using my CS background and love for Data Visualization, I developed this real-time dashboard[GitHub](https://github.com/Chulong-Li/Real-time-Sentiment-Tracking-on-Twitter-for-Brand-Improvement-and-Trend-Recognition)!✨"),
+            dcc.Markdown("__Author's Words__: This dashboard is real-time pipeline for tweet collection on topics and provide insights for the users "),
         ],style={'width': '35%', 'marginLeft': 70}
     ),
     html.Br(),
     
-    # # ABOUT ROW
-    # html.Div(
-    #     className='row',
-    #     children=[
-    #         html.Div(
-    #             className='three columns',
-    #             children=[
-    #                 html.P(
-    #                 'Data extracted from:'
-    #                 ),
-    #                 html.A(
-    #                     'Twitter API',
-    #                     href='https://developer.twitter.com'
-    #                 )                    
-    #             ]
-    #         ),
-    #         html.Div(
-    #             className='three columns',
-    #             children=[
-    #                 html.P(
-    #                 'Code avaliable at:'
-    #                 ),
-    #                 html.A(
-    #                     'GitHub',
-    #                     href='https://github.com/Chulong-Li/Real-time-Sentiment-Tracking-on-Twitter-for-Brand-Improvement-and-Trend-Recognition'
-    #                 )                    
-    #             ]
-    #         ),
-    #         html.Div(
-    #             className='three columns',
-    #             children=[
-    #                 html.P(
-    #                 'Made with:'
-    #                 ),
-    #                 html.A(
-    #                     'Dash / Plot.ly',
-    #                     href='https://plot.ly/dash/'
-    #                 )                    
-    #             ]
-    #         ),
-    #         html.Div(
-    #             className='three columns',
-    #             children=[
-    #                 html.P(
-    #                 'Author:'
-    #                 ),
-    #                 html.A(
-    #                     'Chulong Li',
-    #                     href='https://www.linkedin.com/in/chulong-li/'
-    #                 )                    
-    #             ]
-    #         )                                                          
-    #     ], style={'marginLeft': 70, 'fontSize': 16}
-    # ),
+    # ABOUT ROW
+    html.Div(
+        className='row',
+        children=[
+            html.Div(
+                className='three columns',
+                children=[
+                    html.P(
+                    'Data extracted from:'
+                    ),
+                    html.A(
+                        'Twitter API',
+                        href='https://developer.twitter.com'
+                    )                    
+                ]
+            ),
+            html.Div(
+                className='three columns',
+                children=[
+                    html.P(
+                    'Code avaliable at:'
+                    ),
+                    html.A(
+                        'GitHub',
+                        href='https://github.com/Chulong-Li/Real-time-Sentiment-Tracking-on-Twitter-for-Brand-Improvement-and-Trend-Recognition'
+                    )                    
+                ]
+            ),
+            html.Div(
+                className='three columns',
+                children=[
+                    html.P(
+                    'Made with:'
+                    ),
+                    html.A(
+                        'Dash / Plot.ly',
+                        href='https://plot.ly/dash/'
+                    )                    
+                ]
+            ),
+            html.Div(
+                className='three columns',
+                children=[
+                    html.P(
+                    'Author:'
+                    ),
+                    html.A(
+                        'Mihir Ahuja',
+                        href='https://www.linkedin.com/in/mihir-ahuja/'
+                    )                    
+                ]
+            )                                                          
+        ], style={'marginLeft': 70, 'fontSize': 16}
+    ),
 
     dcc.Interval(
         id='interval-component-slow',
-        interval=1*1000000, # in milliseconds
+        interval=1*45000, # in milliseconds
         n_intervals=0
     )
     ], style={'padding': '20px'})
@@ -126,11 +126,16 @@ app.layout = html.Div(children=[
 @app.callback(Output('live-update-graph', 'children'),
               [Input('interval-component-slow', 'n_intervals')])
 def update_graph_live(n):
+
 	config = twint.Config()
 	config.Search = 'PYPL'
 	config.Limit = 100
 	config.Lang = "en"
-	config.Since = "2019-04-29"
+	if datetime.now().minute % 2 == 0:
+		config.Since = "2019-04-29"
+	else:
+		config.Since = "2019-04-28"
+
 	config.Until = "2020-04-30"
 	config.Custom["created_at"] = ["stamp"]#running search
 	config.Pandas = True
@@ -234,6 +239,39 @@ def update_graph_live(n):
 	labels = ['Positive','Negative','Neutral']
 	values = [pos_count.values[0], neg_count.values[0], neu_count.values[0]]
 
+	#Creating Unigrams
+
+	def generate_ngrams(text,n_gram=1):
+		token = [token for token in text.lower().split(' ') if token != '' if token not in STOPWORDS]
+		ngrams = zip(*[token[i:] for i in range(n_gram)])
+		return [' '.join(ngram) for ngram in ngrams]
+	unigrams = dict()
+	for tweet in finalized_dataframe['tweet']:
+		for w in generate_ngrams(tweet):
+			try:
+				unigrams[w] +=1
+			except:
+				unigrams[w] = 1
+
+	unigrams_df = pd.DataFrame([unigrams]).T.reset_index().sort_values(by=0,ascending=False)
+	unigrams_df = unigrams_df[unigrams_df['index']!='twitter']
+	unigrams_df = unigrams_df[unigrams_df['index']!='pypl']
+	unigrams_df = unigrams_df[unigrams_df['index']!='https']
+	unigrams_df = unigrams_df[[(len(x) > 3) for x in unigrams_df['index']]]
+	unigrams_df = unigrams_df.iloc[:15]
+
+	#Engineering for Retweet/Likes TS plot
+	retweets_likes_df = finalized_dataframe.groupby('hour_mark')['nlikes','nretweets'].sum().reset_index()
+
+	#Barplot
+	fig = go.Figure(go.Bar(x=unigrams_df['index'], y=unigrams_df[0], marker_color='lightblue'))
+
+	fig.update_layout(
+		title="Most Frequent Terms associated from the Twitter feed",
+		xaxis_title="Terms",
+		yaxis_title="Count",
+		)
+
 	children = [
                
     		html.Div([
@@ -265,7 +303,12 @@ def update_graph_live(n):
     								line=dict(width=0.5, color='rgb(184, 247, 212)')
     								)
 
-    						]
+    						],
+    						'layout':{
+    						'title':'Polarity TimeSeries',
+    						'xaxis_title':'Hour',
+    						'yaxis_title':'Count'
+    						}
     						}
     						)	
 
@@ -295,7 +338,41 @@ def update_graph_live(n):
     						}
     						)
 
-    					], style={'width':'27%','display':'inline-block'})
+    					], style={'width':'27%','display':'inline-block'}),
+
+    				html.Div([
+    					dcc.Graph(figure=fig)
+    					], style={'width':'47%','display':'inline-block'}),
+    				    				html.Div([
+
+    					dcc.Graph(
+    						id='rt-time-series',
+    						figure={
+    						'data':[
+    							go.Scatter(
+    								x=retweets_likes_df['hour_mark'],
+    								y=retweets_likes_df['nlikes'],
+    								fill='tozeroy',
+    								name='Likes',
+    								line=dict(width=0.5, color='rgb(131, 90, 241)')
+    								),
+    							go.Scatter(
+    								x=retweets_likes_df['hour_mark'],
+    								y=retweets_likes_df['nretweets'],
+    								fill='tozeroy',
+    								name='Retweets',
+    								line=dict(width=0.5, color='rgb(184, 247, 212)')
+    								)
+    						],
+    						'layout':{
+    						'title':'Likes/RT TimeSeries',
+    						'xaxis_title':'Hour',
+    						'yaxis_title':'Count'
+    						}
+    						}
+    						)	
+
+    					], style={'width': '50%', 'display': 'inline-block', 'padding': '0 0 0 20'}),
 
 					])
             ]
