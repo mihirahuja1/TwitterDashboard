@@ -129,12 +129,12 @@ def update_graph_live(n):
 
 	config = twint.Config()
 	config.Search = 'PYPL'
-	config.Limit = 100
+	config.Limit = 1000
 	config.Lang = "en"
 	if datetime.now().minute % 2 == 0:
-		config.Since = "2019-04-29"
+		config.Since = "2020-04-29"
 	else:
-		config.Since = "2019-04-28"
+		config.Since = "2020-04-28"
 
 	config.Until = "2020-04-30"
 	config.Custom["created_at"] = ["stamp"]#running search
