@@ -82,7 +82,7 @@ app.layout = html.Div(children=[
                     ),
                     html.A(
                         'GitHub',
-                        href='https://github.com/Chulong-Li/Real-time-Sentiment-Tracking-on-Twitter-for-Brand-Improvement-and-Trend-Recognition'
+                        href='https://github.com/mihirahuja1'
                     )                    
                 ]
             ),
