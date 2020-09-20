@@ -53,7 +53,7 @@ app.layout = html.Div(children=[
     html.Div(
         className='row',
         children=[ 
-            dcc.Markdown("__Author's Words__: This dashboard is real-time pipeline for tweet collection on topics and provide insights for the users "),
+            dcc.Markdown("__Author's Words__: This dashboard is real-time pipeline for tweet collection on topics and provide insights for the users. Sometimes the graph won't load due to API issues, in that case return after a while! "),
         ],style={'width': '35%', 'marginLeft': 70}
     ),
     html.Br(),
