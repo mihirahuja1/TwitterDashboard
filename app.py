@@ -23,8 +23,18 @@ from nltk.corpus import stopwords
 from textblob import TextBlob
 
 import tweepy
-from  geopy.geocoders import Nominatim
 import plotly.express as px
+# from geopy import geocoders  
+# from  geopy.geocoders import Nominatim
+
+from opencage.geocoder import OpenCageGeocode
+key = '63fec70fbe1e4b45abab3af391636427'  # get api key from:  https://opencagedata.com
+
+geocoder = OpenCageGeocode(key)
+
+
+import warnings
+warnings.filterwarnings("ignore")
 
 # import nest_asyncio
 # nest_asyncio.apply()
@@ -303,6 +313,41 @@ def update_graph_live(n):
 		yaxis_title="Count",
 		)
 
+
+	#gn = geocoders.GeoNames(username='map_python')
+	def get_lat(place):
+
+		results = geocoder.geocode(place)
+		try:
+			return results[0]['geometry']['lat']
+		except:
+			return ""
+
+	def get_long(place):
+
+		results = geocoder.geocode(place)
+		try:
+			return results[0]['geometry']['lng']
+		except:
+			return ""
+
+	list_of_places = finalized_dataframe['location'].unique()
+
+	locs = pd.DataFrame(list_of_places)
+
+	locs.columns = ['Location']
+
+	locs['Lat'] = locs['Location'].apply(lambda x: get_lat(x))
+
+	locs['Lon'] = locs['Location'].apply(lambda x: get_long(x))
+
+	fig_map = px.density_mapbox(locs, lat='Lat', lon='Lon', radius=10,center=dict(lat=0, lon=180), zoom=0,mapbox_style="stamen-terrain")
+
+	fig.update_layout(
+		title="Tweet origins",
+		)
+
+
 	children = [
                
     		html.Div([
@@ -374,7 +419,13 @@ def update_graph_live(n):
     				html.Div([
     					dcc.Graph(figure=fig)
     					], style={'width':'47%','display':'inline-block'}),
-    				    				html.Div([
+
+    				html.Div([
+    					dcc.Graph(figure=fig_map)
+    					], style={'width':'47%','display':'inline-block'}),
+
+
+    				html.Div([
 
     					dcc.Graph(
     						id='rt-time-series',
