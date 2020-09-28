@@ -22,6 +22,10 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from textblob import TextBlob
 
+import tweepy
+from  geopy.geocoders import Nominatim
+import plotly.express as px
+
 # import nest_asyncio
 # nest_asyncio.apply()
 
@@ -115,7 +119,7 @@ app.layout = html.Div(children=[
 
     dcc.Interval(
         id='interval-component-slow',
-        interval=1*45000, # in milliseconds
+        interval=1*45000000, # in milliseconds
         n_intervals=0
     )
     ], style={'padding': '20px'})
@@ -127,22 +131,45 @@ app.layout = html.Div(children=[
               [Input('interval-component-slow', 'n_intervals')])
 def update_graph_live(n):
 
-	config = twint.Config()
-	config.Search = 'PYPL'
-	config.Limit = 1000
-	config.Lang = "en"
-	if datetime.now().minute % 2 == 0:
-		config.Since = "2020-04-29"
-	else:
-		config.Since = "2020-04-28"
+	# config = twint.Config()
+	# config.Search = 'PYPL'
+	# config.Limit = 1000
+	# config.Lang = "en"
+	# if datetime.now().minute % 2 == 0:
+	# 	config.Since = "2020-04-29"
+	# else:
+	# 	config.Since = "2020-04-28"
 
-	config.Until = "2020-04-30"
-	config.Custom["created_at"] = ["stamp"]#running search
-	config.Pandas = True
-	twint.run.Search(config)
-	dump = twint.storage.panda.Tweets_df
-	df = dump
-	finalized_dataframe = df[['date','tweet','nretweets','nlikes']]
+	# config.Until = "2020-04-30"
+	# config.Custom["created_at"] = ["stamp"]#running search
+	# config.Pandas = True
+	# twint.run.Search(config)
+	# dump = twint.storage.panda.Tweets_df
+
+
+	consumer_key = "I6fZIQiiDsMKYBEbFMt0Xh2nL"
+	consumer_secret = "pRXCiv4qfuoEZqM7y23Xvvh1ZbdHPzUMimxfdZq6ChyhzseRRJ"
+	access_token = "390663782-OFgaApZzw5ox8knGxsLWeAjkBOIPkX3ZJDr2r6ri"
+	access_token_secret = "CWjYjMYrvKXztDJG228JI3MTF33Lzq9ki7VwaznMwfEX3"
+	auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+	auth.set_access_token(access_token, access_token_secret)
+	api = tweepy.API(auth,wait_on_rate_limit=True)
+
+	text_query = 'PYPL'
+	count = 500
+	try:
+ # Creation of query method using parameters
+		tweets = tweepy.Cursor(api.search,q=text_query,lang='en').items(count)
+		tweets_list = [[tweet.created_at, tweet.id, tweet.text, tweet.user.location] for tweet in tweets]
+		tweets_df = pd.DataFrame(tweets_list)
+	except BaseException as e:
+		print('failed on_status,',str(e))
+
+	tweets_df.columns = ['date','tweet_id','tweet','location']	
+
+
+	df = tweets_df
+	finalized_dataframe = df[['date','tweet','location']]
 
 	def clean_text(txt):
 	#Remove URL
@@ -154,7 +181,7 @@ def update_graph_live(n):
 
 
 	finalized_dataframe['tweet'] = finalized_dataframe['tweet'].apply(lambda x: clean_text(x))
-	finalized_dataframe['hour_mark'] = finalized_dataframe['date'].apply(lambda x: x[11:13])
+	finalized_dataframe['hour_mark'] = finalized_dataframe['date'].astype(str).apply(lambda x: x[11:13])
 
 	def getPolarity(text):
 		return TextBlob(text).sentiment.polarity
@@ -236,6 +263,9 @@ def update_graph_live(n):
 	pos_count = polarity_agg.loc[polarity_agg['polarity_label']=='Pos']['count']
 	neu_count = polarity_agg.loc[polarity_agg['polarity_label']=='Neu']['count']
 
+	if len(neg_count) == 0:
+		neg_count.at[0] = 0
+
 	labels = ['Positive','Negative','Neutral']
 	values = [pos_count.values[0], neg_count.values[0], neu_count.values[0]]
 
@@ -261,7 +291,8 @@ def update_graph_live(n):
 	unigrams_df = unigrams_df.iloc[:15]
 
 	#Engineering for Retweet/Likes TS plot
-	retweets_likes_df = finalized_dataframe.groupby('hour_mark')['nlikes','nretweets'].sum().reset_index()
+	#ƒnretweets_likes_df = finalized_dataframe.groupby('hour_mark')['nlikes','nretweets'].sum().reset_index()
+	retweets_likes_df = pd.DataFrame({'hour_mark':[1],"nlikes":[2],"nretweets":[3]})
 
 	#Barplot
 	fig = go.Figure(go.Bar(x=unigrams_df['index'], y=unigrams_df[0], marker_color='lightblue'))
