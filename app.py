@@ -170,16 +170,16 @@ def update_graph_live(n):
 	try:
  # Creation of query method using parameters
 		tweets = tweepy.Cursor(api.search,q=text_query,lang='en').items(count)
-		tweets_list = [[tweet.created_at, tweet.id, tweet.text, tweet.user.location] for tweet in tweets]
+		tweets_list = [[tweet.created_at, tweet.id, tweet.text, tweet.retweet_count, tweet.favorite_count] for tweet in tweets]
 		tweets_df = pd.DataFrame(tweets_list)
 	except BaseException as e:
 		print('failed on_status,',str(e))
 
-	tweets_df.columns = ['date','tweet_id','tweet','location']	
+	tweets_df.columns = ['date','tweet_id','tweet','nretweets','nlikes']	
 
 
 	df = tweets_df
-	finalized_dataframe = df[['date','tweet','location']]
+	finalized_dataframe = df[['date','tweet','nretweets','nlikes']]
 
 	def clean_text(txt):
 	#Remove URL
@@ -302,7 +302,7 @@ def update_graph_live(n):
 
 	#Engineering for Retweet/Likes TS plot
 	#ƒnretweets_likes_df = finalized_dataframe.groupby('hour_mark')['nlikes','nretweets'].sum().reset_index()
-	retweets_likes_df = pd.DataFrame({'hour_mark':[1],"nlikes":[2],"nretweets":[3]})
+	retweets_likes_df = finalized_dataframe.groupby('hour_mark')['nlikes','nretweets'].sum().reset_index()
 
 	#Barplot
 	fig = go.Figure(go.Bar(x=unigrams_df['index'], y=unigrams_df[0], marker_color='lightblue'))
@@ -315,37 +315,37 @@ def update_graph_live(n):
 
 
 	#gn = geocoders.GeoNames(username='map_python')
-	def get_lat(place):
+	# def get_lat(place):
 
-		results = geocoder.geocode(place)
-		try:
-			return results[0]['geometry']['lat']
-		except:
-			return ""
+	# 	results = geocoder.geocode(place)
+	# 	try:
+	# 		return results[0]['geometry']['lat']
+	# 	except:
+	# 		return ""
 
-	def get_long(place):
+	# def get_long(place):
 
-		results = geocoder.geocode(place)
-		try:
-			return results[0]['geometry']['lng']
-		except:
-			return ""
+	# 	results = geocoder.geocode(place)
+	# 	try:
+	# 		return results[0]['geometry']['lng']
+	# 	except:
+	# 		return ""
 
-	list_of_places = finalized_dataframe['location'].unique()
+	# list_of_places = finalized_dataframe['location'].unique()
 
-	locs = pd.DataFrame(list_of_places)
+	# locs = pd.DataFrame(list_of_places)
 
-	locs.columns = ['Location']
+	# locs.columns = ['Location']
 
-	locs['Lat'] = locs['Location'].apply(lambda x: get_lat(x))
+	# locs['Lat'] = locs['Location'].apply(lambda x: get_lat(x))
 
-	locs['Lon'] = locs['Location'].apply(lambda x: get_long(x))
+	# locs['Lon'] = locs['Location'].apply(lambda x: get_long(x))
 
-	fig_map = px.density_mapbox(locs, lat='Lat', lon='Lon', radius=10,center=dict(lat=0, lon=180), zoom=0,mapbox_style="stamen-terrain")
+	# fig_map = px.density_mapbox(locs, lat='Lat', lon='Lon', radius=10,center=dict(lat=0, lon=180), zoom=0,mapbox_style="stamen-terrain")
 
-	fig.update_layout(
-		title="Tweet origins",
-		)
+	# fig.update_layout(
+	# 	title="Tweet origins",
+	# 	)
 
 
 	children = [
@@ -419,12 +419,6 @@ def update_graph_live(n):
     				html.Div([
     					dcc.Graph(figure=fig)
     					], style={'width':'47%','display':'inline-block'}),
-
-    				html.Div([
-    					dcc.Graph(figure=fig_map)
-    					], style={'width':'47%','display':'inline-block'}),
-
-
     				html.Div([
 
     					dcc.Graph(
