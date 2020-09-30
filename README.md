@@ -1,3 +1,5 @@
+Update : 09/28/2020 
+Fixed!
 Update : 09/28/2020
 Fixed the data streaming, the website is taking too much time to render, since I have included a Map Visualization. 
 
