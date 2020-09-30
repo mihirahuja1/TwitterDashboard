@@ -27,10 +27,10 @@ import plotly.express as px
 # from geopy import geocoders  
 # from  geopy.geocoders import Nominatim
 
-from opencage.geocoder import OpenCageGeocode
-key = '63fec70fbe1e4b45abab3af391636427'  # get api key from:  https://opencagedata.com
+# from opencage.geocoder import OpenCageGeocode
+# key = '63fec70fbe1e4b45abab3af391636427'  # get api key from:  https://opencagedata.com
 
-geocoder = OpenCageGeocode(key)
+# geocoder = OpenCageGeocode(key)
 
 
 import warnings
