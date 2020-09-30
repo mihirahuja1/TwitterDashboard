@@ -64,6 +64,7 @@ app.layout = html.Div(children=[
     html.Div(id='live-update-graph-bottom'),
 
     # Author's Words
+
     html.Div(
         className='row',
         children=[ 
