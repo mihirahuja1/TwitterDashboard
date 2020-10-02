@@ -277,6 +277,12 @@ def update_graph_live(n):
 	if len(neg_count) == 0:
 		neg_count.at[0] = 0
 
+	if len(pos_count) == 0:
+		pos_count.at[0] = 0
+	if len(neu_count) == 0:
+		neu_count.at[0] == 0
+
+
 	labels = ['Positive','Negative','Neutral']
 	values = [pos_count.values[0], neg_count.values[0], neu_count.values[0]]
 
