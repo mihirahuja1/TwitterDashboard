@@ -1,12 +1,27 @@
+# Twitter Analytics Dashboard
 
-Update : 09/28/2020
-Fixed the data streaming, the website is taking too much time to render, since I have included a Map Visualization. 
+Twitter Analytics Dashboard is a passion project where I leveraged my programming skills and love for Data Visualization to come up with a concise dashboard.
 
-Hey there!
+## Links
+[View Dashboard](https://twitter-dash-analytics.herokuapp.com/)
 
-It came to my notice that the data stream pipeline is not working.
-I am currently trying to fix that and looking into alternative data sources to fetch twitter data.
-I'll soon upload a notebook version of the dashboard.
+## Frameworks
 
-Thanks,
-Mihir
+Python
+
+[Plotly](https://plotly.com/python/) 
+
+[Dash](https://plotly.com/dash/)
+
+[Twitter API](https://developer.twitter.com/en/docs)
+
+
+```
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+Due to rate limit, tweets are not loading at instances. In that case check back in a while.
+ 
