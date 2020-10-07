@@ -68,7 +68,7 @@ app.layout = html.Div(children=[
     html.Div(
         className='row',
         children=[ 
-            dcc.Markdown("__Author's Words__: This dashboard is real-time pipeline for tweet collection on topics and provide insights for the users. Sometimes the graph won't load due to API issues, in that case return after a while! "),
+            dcc.Markdown("__Note__: This dashboard is real-time pipeline for tweet collection on topics and provide insights for the users.Search term used is $PYPL. Sometimes the graph won't load due to API issues, in that case return after a while! "),
         ],style={'width': '35%', 'marginLeft': 70}
     ),
     html.Br(),
@@ -388,9 +388,9 @@ def update_graph_live(n):
 
     						],
     						'layout':{
-    						'title':'Polarity TimeSeries',
-    						'xaxis_title':'Hour',
-    						'yaxis_title':'Count'
+    						'title':'Tweet Polarity',
+    						'xaxis':{'title':'Hour'},
+    						'yaxis':{'title':'Count'}
     						}
     						}
     						)	
@@ -423,6 +423,50 @@ def update_graph_live(n):
 
     					], style={'width':'27%','display':'inline-block'}),
 
+    				html.Div(
+                    className='row',
+                    children=[
+                        html.Div(
+                            children=[
+                                html.P('Average likes per hour',
+                                    style={
+                                        'fontSize': 17
+                                    }
+                                ),
+                                html.P('{0:.2f}'.format(retweets_likes_df['nlikes'].mean()),
+                                    style={
+                                        'fontSize': 40
+                                    }
+                                )
+                            ], 
+                            style={
+                                'width': '20%', 
+                                'display': 'inline-block'
+                            }
+
+                        ),
+                        html.Div(
+                            children=[
+                                html.P('Average retweets per hour',
+                                    style={
+                                        'fontSize': 17
+                                    }
+                                ),
+                                html.P('{0:.2f}'.format(retweets_likes_df['nretweets'].mean()),
+                                    style={
+                                        'fontSize': 40
+                                    }
+                                )
+                            ], 
+                            style={
+                                'width': '20%', 
+                                'display': 'inline-block'
+                            }
+
+                        ),
+
+                        ]),
+
     				html.Div([
     					dcc.Graph(figure=fig)
     					], style={'width':'47%','display':'inline-block'}),
@@ -449,8 +493,8 @@ def update_graph_live(n):
     						],
     						'layout':{
     						'title':'Likes/RT TimeSeries',
-    						'xaxis_title':'Hour',
-    						'yaxis_title':'Count'
+    						'xaxis':{'title':'Hour'},
+    						'yaxis':{'title':'Count'}
     						}
     						}
     						)	
