@@ -1,6 +1,6 @@
 # Twitter Analytics Dashboard
 
-Twitter Analytics Dashboard is a passion project where I leveraged my programming skills and love for Data Visualization to come up with a concise dashboard.
+Twitter Analytics Dashboard is a  project where I leveraged my programming skills and love for Data Visualization to come up with a concise dashboard.
 
 ![img](https://github.com/mihirahuja1/TwitterDashboard/blob/master/Screen%20Shot%202020-09-29%20at%209.20.12%20PM.png)
 ## Links
