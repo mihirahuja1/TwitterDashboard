@@ -320,12 +320,12 @@ def update_graph_live(n):
 		yaxis_title="Count",
 		)
 
-	x0 = finalized_dataframe['nretweets']
-	x1 = finalized_dataframe['nlikes']
-	fig_box = go.Figure()
-	fig_box.add_trace(go.Box(x=x0))
-	#fig_box.add_trace(go.Box(x=x1))
-	fig_box.update_layout(autosize=False,width=500,height=400)
+	# x0 = finalized_dataframe['nretweets']
+	# x1 = finalized_dataframe['nlikes']
+	# fig_box = go.Figure()
+	# fig_box.add_trace(go.Box(x=x0))
+	# #fig_box.add_trace(go.Box(x=x1))
+	# fig_box.update_layout(autosize=False,width=500,height=400)
 
 	words_per_tweet = finalized_dataframe['tweet'].apply(lambda x: len(x.split())).sum()/len(finalized_dataframe)
 
