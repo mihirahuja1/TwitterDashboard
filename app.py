@@ -320,6 +320,16 @@ def update_graph_live(n):
 		yaxis_title="Count",
 		)
 
+	x0 = finalized_dataframe['nretweets']
+	x1 = finalized_dataframe['nlikes']
+	fig_box = go.Figure()
+	fig_box.add_trace(go.Box(x=x0))
+	#fig_box.add_trace(go.Box(x=x1))
+	fig_box.update_layout(autosize=False,width=500,height=400)
+
+	words_per_tweet = finalized_dataframe['tweet'].apply(lambda x: len(x.split())).sum()/len(finalized_dataframe)
+
+
 
 	#gn = geocoders.GeoNames(username='map_python')
 	# def get_lat(place):
@@ -464,6 +474,47 @@ def update_graph_live(n):
                             }
 
                         ),
+                        html.Div(
+                            children=[
+                                html.P('Average words per tweet',
+                                    style={
+                                        'fontSize': 17
+                                    }
+                                ),
+                                html.P('{0:.2f}'.format(words_per_tweet),
+                                    style={
+                                        'fontSize': 40
+                                    }
+                                )
+                            ], 
+                            style={
+                                'width': '20%', 
+                                'display': 'inline-block'
+                            }
+
+                        ),
+                        html.Div(
+                            children=[
+                                html.P('Top related word',
+                                    style={
+                                        'fontSize': 17
+                                    }
+                                ),
+                                html.P(unigrams_df.iloc[0].values[0],
+                                    style={
+                                        'fontSize': 40
+                                    }
+                                )
+                            ], 
+                            style={
+                                'width': '20%', 
+                                'display': 'inline-block'
+                            }
+
+                        )
+
+
+
 
                         ]),
 
